@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">CallReceiver</string>
+    <string name="permission_grant">Permission Grant</string>
+    <string name="permission_not_grant">Permission Not Grant</string>
+    <string name="receiver_blocked">Call Receiver is blocked</string>
+    <string name="receiver_disabled">Call Receiver disabled</string>
+    <string name="receiver_enabled">Call Receiver is working</string>
+    <string name="disable">Disable</string>
+    <string name="enable">Enable</string>
+</resources>
