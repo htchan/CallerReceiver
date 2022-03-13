@@ -7,15 +7,21 @@ import android.widget.TextView
 import android.content.pm.PackageManager
 
 import android.content.ComponentName
-import android.graphics.Color
+import android.content.Context
+import android.content.SharedPreferences
+import android.widget.Switch
+import com.htchan.callreceiver.helper.CallerHintHelper
+import com.htchan.callreceiver.helper.PermissionHelper
 
 
 class MainActivity : AppCompatActivity() {
-    private val permissionUtils = PermissionUtils(this)
+    private val permissionUtils = PermissionHelper(this)
+    private lateinit var sharedPref: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         permissionUtils.handlePermission(this)
+        initSharedPref()
         val permissionText = findViewById<TextView>(R.id.permission_text)
         val receiverText = findViewById<TextView>(R.id.receiver_text)
         if (!permissionUtils.validatePermission()) {
@@ -26,14 +32,17 @@ class MainActivity : AppCompatActivity() {
         } else {
             renderEnableButton()
         }
+        renderSwitches()
     }
 
     override fun onResume() {
         super.onResume()
         permissionUtils.handlePermission(this)
+        renderEnableButton()
+        renderSwitches()
     }
 
-    fun renderEnableButton() {
+    private fun renderEnableButton() {
         val receiverName = ComponentName(this, "com.htchan.callreceiver.CallReceiver")
         val receiverEnabled = this.packageManager.getComponentEnabledSetting(receiverName)
         val permissionText = findViewById<TextView>(R.id.permission_text)
@@ -66,6 +75,41 @@ class MainActivity : AppCompatActivity() {
                     PackageManager.DONT_KILL_APP
                 )
                 renderEnableButton()
+            }
+        }
+    }
+
+    private fun initSharedPref() {
+        sharedPref = getSharedPreferences("com.htchan.callreceiver", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            if (!sharedPref.contains("use_toast")) {
+                putBoolean("use_toast", true)
+            }
+            if (!sharedPref.contains("use_notification")) {
+                putBoolean("use_notification", true)
+            }
+            apply()
+        }
+    }
+
+    private fun renderSwitches() {
+        val validPermission = permissionUtils.validatePermission()
+        val toastSwitch = findViewById<Switch>(R.id.toast_switch)
+        if (!validPermission) toastSwitch.isEnabled = false
+        toastSwitch.isChecked = sharedPref.getBoolean("use_toast", true)
+        toastSwitch.setOnCheckedChangeListener { _, b: Boolean ->
+            with(sharedPref.edit()) {
+                putBoolean("use_toast", b)
+                apply()
+            }
+        }
+        val notificationSwitch = findViewById<Switch>(R.id.notification_switch)
+        if (!validPermission) notificationSwitch.isEnabled = false
+        notificationSwitch.isChecked = sharedPref.getBoolean("use_notification", true)
+        notificationSwitch.setOnCheckedChangeListener { _, b: Boolean ->
+            with(sharedPref.edit()) {
+                putBoolean("use_notification", b)
+                apply()
             }
         }
     }

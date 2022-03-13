@@ -1,4 +1,4 @@
-package com.htchan.callreceiver
+package com.htchan.callreceiver.helper
 
 import android.Manifest
 import android.app.Activity
@@ -7,7 +7,7 @@ import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
-class PermissionUtils(private val context: Context) {
+class PermissionHelper(private val context: Context) {
     fun validatePermission(): Boolean {
         return ContextCompat.checkSelfPermission(
             context,
