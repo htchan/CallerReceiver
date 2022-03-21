@@ -61,6 +61,7 @@ class MainActivity : AppCompatActivity() {
                     PackageManager.DONT_KILL_APP
                 )
                 renderEnableButton()
+                renderSwitches()
             }
         } else {
             permissionText.text = getString(R.string.permission_grant)
@@ -75,6 +76,7 @@ class MainActivity : AppCompatActivity() {
                     PackageManager.DONT_KILL_APP
                 )
                 renderEnableButton()
+                renderSwitches()
             }
         }
     }

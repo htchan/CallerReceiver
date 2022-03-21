@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.htchan.callreceiver.R
+import java.lang.Exception
 
 import java.net.URL
 
@@ -66,11 +67,15 @@ class CallerHintHelper {
         }
 
         fun map(phoneNumber: String): String {
-            val url = URL("https://www.hkjunkcall.com/?ft=$phoneNumber")
-            var response = url.readText()
-            val regex = "<meta property=\"og:title\" content=\".*?: (.*?) 電話 搜尋結果\"".toRegex()
-            var result = regex.find(response)?.groupValues?.get(1)?:  "Unknown"
-            return result
+            try {
+                val url = URL("https://www.hkjunkcall.com/?ft=$phoneNumber")
+                var response = url.readText()
+                val regex = "<meta property=\"og:title\" content=\".*?: (.*?) 電話 搜尋結果\"".toRegex()
+                var result = regex.find(response)?.groupValues?.get(1) ?: "Unknown"
+                return result
+            } catch (e: Exception) {
+                return "<${e.toString()}>"
+            }
         }
     }
 }

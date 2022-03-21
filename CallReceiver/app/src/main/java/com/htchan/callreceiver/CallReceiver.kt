@@ -3,8 +3,12 @@ package com.htchan.callreceiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.telephony.PhoneStateListener
+import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.htchan.callreceiver.helper.PermissionHelper
 import com.htchan.callreceiver.helper.ContactHelper
 import com.htchan.callreceiver.helper.CallerHintHelper
@@ -23,14 +27,13 @@ class CallReceiver: BroadcastReceiver() {
             val phoneNumber = intent.getStringExtra(
                 TelephonyManager.EXTRA_INCOMING_NUMBER
             ) ?: return
-            Log.e("CallReceiver", phoneNumber)
             CoroutineScope(Dispatchers.IO).launch {
                 HandleIncomingCall(context, phoneNumber)
             }
         }
     }
 
-    suspend fun HandleIncomingCall(context: Context, phoneNumber: String) {
+    fun HandleIncomingCall(context: Context, phoneNumber: String) {
         if (!ContactHelper.phoneNumberExist(context, phoneNumber)) {
             val callerHint: String = CallerHintHelper.map(phoneNumber)
             CallerHintHelper.show(context, phoneNumber, callerHint)

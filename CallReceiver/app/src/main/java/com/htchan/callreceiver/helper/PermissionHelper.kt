@@ -8,26 +8,33 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
 class PermissionHelper(private val context: Context) {
-    fun validatePermission(): Boolean {
+    companion object {
+        val ALL_PERMISSIONS = arrayOf(
+            Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.READ_CONTACTS,
+            Manifest.permission.READ_CALL_LOG,
+            Manifest.permission.INTERNET
+        )
+    }
+
+    fun permissionGrant(permission: String): Boolean {
         return ContextCompat.checkSelfPermission(
             context,
-            Manifest.permission.READ_PHONE_STATE
+            permission
         ) == PackageManager.PERMISSION_GRANTED
-        &&
-        ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.READ_CONTACTS
-        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    fun validatePermission(): Boolean {
+        for (permission in ALL_PERMISSIONS) {
+            if (!permissionGrant(permission)) return false
+        }
+        return true
     }
 
     private fun requestPermission(activity: Activity) {
         ActivityCompat.requestPermissions(
             activity,
-            arrayOf(
-                Manifest.permission.READ_PHONE_STATE,
-                Manifest.permission.READ_CONTACTS,
-                Manifest.permission.INTERNET
-            ),
+            ALL_PERMISSIONS,
             1
         )
     }
