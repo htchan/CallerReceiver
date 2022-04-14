@@ -9,9 +9,16 @@ import android.content.pm.PackageManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Configuration
+import android.util.Log
+import android.widget.EditText
 import android.widget.Switch
 import com.htchan.callreceiver.helper.CallerHintHelper
 import com.htchan.callreceiver.helper.PermissionHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import okhttp3.Dispatcher
 
 
 class MainActivity : AppCompatActivity() {
@@ -33,6 +40,7 @@ class MainActivity : AppCompatActivity() {
             renderEnableButton()
         }
         renderSwitches()
+        setupTestArea()
     }
 
     override fun onResume() {
@@ -50,9 +58,9 @@ class MainActivity : AppCompatActivity() {
         val button = findViewById<Button>(R.id.enable_button)
         if (receiverEnabled == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
             permissionText.text = getString(R.string.permission_grant)
-            permissionText.setTextColor(getColor(R.color.pass))
             receiverText.text = getString(R.string.receiver_enabled)
-            receiverText.setTextColor(getColor(R.color.pass))
+            permissionText.setTextColor(getColor(R.color.design_default_color_on_primary))
+            receiverText.setTextColor(getColor(R.color.design_default_color_on_primary))
             button.text = getString(R.string.disable)
             button.setOnClickListener {
                 this.packageManager.setComponentEnabledSetting(
@@ -65,7 +73,7 @@ class MainActivity : AppCompatActivity() {
             }
         } else {
             permissionText.text = getString(R.string.permission_grant)
-            permissionText.setTextColor(getColor(R.color.pass))
+            permissionText.setTextColor(getColor(R.color.design_default_color_on_primary))
             receiverText.text = getString(R.string.receiver_disabled)
             receiverText.setTextColor(getColor(R.color.fail))
             button.text = getString(R.string.enable)
@@ -112,6 +120,23 @@ class MainActivity : AppCompatActivity() {
             with(sharedPref.edit()) {
                 putBoolean("use_notification", b)
                 apply()
+            }
+        }
+    }
+
+    private fun setupTestArea() {
+        val testPhoneNumberInput = findViewById<EditText>(R.id.test_phone_number)
+        val sendTestButton = findViewById<Button>(R.id.send_test_button)
+        val testResultView = findViewById<TextView>(R.id.test_result)
+
+        sendTestButton.setOnClickListener {
+            CoroutineScope(Dispatchers.IO).launch {
+                Log.e("callreceiver", testPhoneNumberInput.text.toString())
+                val result = CallerHintHelper().map(testPhoneNumberInput.text.toString())
+                Log.e("callreceiver", "result: $result")
+                runOnUiThread {
+                    testResultView.text = result
+                }
             }
         }
     }

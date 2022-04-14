@@ -18,6 +18,8 @@ import kotlinx.coroutines.launch
 
 class CallReceiver: BroadcastReceiver() {
 
+    val callerHintHelper = CallerHintHelper()
+
     override fun onReceive(context: Context, intent: Intent) {
         if (!PermissionHelper(context).validatePermission()) return
 
@@ -26,7 +28,7 @@ class CallReceiver: BroadcastReceiver() {
         if (state.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
             val phoneNumber = intent.getStringExtra(
                 TelephonyManager.EXTRA_INCOMING_NUMBER
-            ) ?: return
+            )?.replace("[\\+| ]".toRegex(), "") ?: return
             CoroutineScope(Dispatchers.IO).launch {
                 HandleIncomingCall(context, phoneNumber)
             }
@@ -35,8 +37,8 @@ class CallReceiver: BroadcastReceiver() {
 
     fun HandleIncomingCall(context: Context, phoneNumber: String) {
         if (!ContactHelper.phoneNumberExist(context, phoneNumber)) {
-            val callerHint: String = CallerHintHelper.map(phoneNumber)
-            CallerHintHelper.show(context, phoneNumber, callerHint)
+            val callerHint: String = callerHintHelper.map(phoneNumber)
+            callerHintHelper.show(context, phoneNumber, callerHint)
         }
     }
 }
