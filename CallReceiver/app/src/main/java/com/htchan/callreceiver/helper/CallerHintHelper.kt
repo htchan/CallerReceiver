@@ -76,30 +76,28 @@ class CallerHintHelper {
 
     fun map(phoneNumber: String): String {
         var name: String = ""
-        for (i in 1..MAX_ATTEMPT) {
-            try {
-                val client = OkHttpClient.Builder()
-                    .connectTimeout(5, TimeUnit.SECONDS)
-                    .readTimeout(10, TimeUnit.SECONDS)
-                    .build()
-                val request = Request.Builder()
-                    .url(
-                        "https://www.hkjunkcall.com/".toHttpUrl()
-                            ?.newBuilder()
-                            ?.addQueryParameter("ft", phoneNumber)
-                            ?.build()
-                    )
-                    .build()
+        try {
+            val client = OkHttpClient.Builder()
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .build()
+            val request = Request.Builder()
+                .url(
+                    "https://www.hkjunkcall.com/".toHttpUrl()
+                        ?.newBuilder()
+                        ?.addQueryParameter("ft", phoneNumber)
+                        ?.build()
+                )
+                .build()
 
-                val response = client.newCall(request).execute()
-                val regex =
-                    "<meta property=\"og:title\" content=\".*?: (.*?) 電話 搜尋結果\"".toRegex()
-                val content = response.body?.string()
-                response.body?.close()
-                return regex.find(content ?: "")?.groupValues?.get(1) ?: "Unknown"
-            } catch (e: Exception) {
-                name = "<${e.toString()}>"
-            }
+            val response = client.newCall(request).execute()
+            val regex =
+                "<meta property=\"og:title\" content=\".*?: (.*?) 電話 搜尋結果\"".toRegex()
+            val content = response.body?.string()
+            response.body?.close()
+            return regex.find(content ?: "")?.groupValues?.get(1) ?: "Unknown"
+        } catch (e: Exception) {
+            name = "<${e.toString()}>"
         }
         return name
     }

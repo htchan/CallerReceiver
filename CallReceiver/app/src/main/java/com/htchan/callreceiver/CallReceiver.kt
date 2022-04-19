@@ -17,9 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class CallReceiver: BroadcastReceiver() {
-
-    val callerHintHelper = CallerHintHelper()
-
     override fun onReceive(context: Context, intent: Intent) {
         if (!PermissionHelper(context).validatePermission()) return
 
@@ -37,6 +34,7 @@ class CallReceiver: BroadcastReceiver() {
 
     fun HandleIncomingCall(context: Context, phoneNumber: String) {
         if (!ContactHelper.phoneNumberExist(context, phoneNumber)) {
+            val callerHintHelper = CallerHintHelper()
             val callerHint: String = callerHintHelper.map(phoneNumber)
             callerHintHelper.show(context, phoneNumber, callerHint)
         }
