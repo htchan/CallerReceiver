@@ -2,12 +2,14 @@ package com.htchan.callreceiver.helper
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.htchan.callreceiver.MainActivity
 import com.htchan.callreceiver.R
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -22,6 +24,7 @@ import java.util.concurrent.TimeUnit
 class CallerHintHelper {
     val CHANNEL_ID = "Call_Receiver"
     val MAX_ATTEMPT = 2
+    val UNKNOWN_CALLER_NAME = "Unknown"
 
     private fun createNotificationChannel(context: Context) {
         val name = "Call Receiver"
@@ -38,12 +41,19 @@ class CallerHintHelper {
 
     private fun pushNotification(context: Context, phoneNumber: String, callerHint: String) {
         Log.e("call receiver", callerHint)
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        var builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("Incoming Call $callerHint")
             .setContentText("Phone Number: $phoneNumber")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
+        if (callerHint == UNKNOWN_CALLER_NAME) {
+            val intent = MainActivity.newIntent(context, phoneNumber)
+            val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+            builder = builder.setContentTitle("Open App")
+                .setContentIntent(pendingIntent)
+        } else {
+            builder = builder.setContentTitle("Incoming Call $callerHint")
+        }
         with(NotificationManagerCompat.from(context)) {
             // notificationId is a unique int for each notification that you must define
             notify(0, builder.build())
@@ -78,8 +88,8 @@ class CallerHintHelper {
         var name: String = ""
         try {
             val client = OkHttpClient.Builder()
-                .connectTimeout(5, TimeUnit.SECONDS)
-                .readTimeout(10, TimeUnit.SECONDS)
+                .connectTimeout(2, TimeUnit.SECONDS)
+                .readTimeout(3, TimeUnit.SECONDS)
                 .build()
             val request = Request.Builder()
                 .url(
@@ -95,9 +105,9 @@ class CallerHintHelper {
                 "<meta property=\"og:title\" content=\".*?: (.*?) 電話 搜尋結果\"".toRegex()
             val content = response.body?.string()
             response.body?.close()
-            return regex.find(content ?: "")?.groupValues?.get(1) ?: "Unknown"
+            return regex.find(content ?: "")?.groupValues?.get(1) ?: UNKNOWN_CALLER_NAME
         } catch (e: Exception) {
-            name = "<${e.toString()}>"
+            name = UNKNOWN_CALLER_NAME//"<${e.toString()}>"
         }
         return name
     }

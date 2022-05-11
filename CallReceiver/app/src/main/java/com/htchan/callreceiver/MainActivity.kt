@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.util.Log
@@ -24,6 +25,17 @@ import okhttp3.Dispatcher
 class MainActivity : AppCompatActivity() {
     private val permissionUtils = PermissionHelper(this)
     private lateinit var sharedPref: SharedPreferences
+
+    companion object {
+        const val QUERY_PHONE_NUMBER = "phone_number"
+
+        fun newIntent(context: Context, phoneNumber: String) =  Intent(context, MainActivity::class.java).apply {
+            // Intent.FLAG_ACTIVITY_SINGLE_TOP
+            // Clear all history, click back will close App
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra(QUERY_PHONE_NUMBER, phoneNumber)
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -40,7 +52,7 @@ class MainActivity : AppCompatActivity() {
             renderEnableButton()
         }
         renderSwitches()
-        setupTestArea()
+        setupTestArea(intent.getStringExtra(QUERY_PHONE_NUMBER))
     }
 
     override fun onResume() {
@@ -124,7 +136,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupTestArea() {
+    private fun setupTestArea(queryPhoneNumber: String?) {
         val testPhoneNumberInput = findViewById<EditText>(R.id.test_phone_number)
         val sendTestButton = findViewById<Button>(R.id.send_test_button)
         val testResultView = findViewById<TextView>(R.id.test_result)
@@ -138,6 +150,11 @@ class MainActivity : AppCompatActivity() {
                     testResultView.text = result
                 }
             }
+        }
+
+        if (queryPhoneNumber != null) {
+            testPhoneNumberInput.setText(queryPhoneNumber)
+            sendTestButton.callOnClick()
         }
     }
 }
