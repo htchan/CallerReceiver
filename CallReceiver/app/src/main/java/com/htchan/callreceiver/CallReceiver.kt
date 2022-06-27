@@ -1,17 +1,16 @@
 package com.htchan.callreceiver
 
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import android.telephony.PhoneStateListener
-import android.telephony.TelephonyCallback
+import android.os.PowerManager
 import android.telephony.TelephonyManager
-import android.util.Log
-import androidx.annotation.RequiresApi
-import com.htchan.callreceiver.helper.PermissionHelper
-import com.htchan.callreceiver.helper.ContactHelper
+import androidx.appcompat.app.AppCompatActivity
 import com.htchan.callreceiver.helper.CallerHintHelper
+import com.htchan.callreceiver.helper.ContactHelper
+import com.htchan.callreceiver.helper.PermissionHelper
+import com.htchan.callreceiver.helper.PowerHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,7 +34,8 @@ class CallReceiver: BroadcastReceiver() {
     fun HandleIncomingCall(context: Context, phoneNumber: String) {
         if (!ContactHelper.phoneNumberExist(context, phoneNumber)) {
             val callerHintHelper = CallerHintHelper()
-            val callerHint: String = callerHintHelper.map(phoneNumber)
+            var callerHint: String = callerHintHelper.UNKNOWN_CALLER_NAME
+            if (!PowerHelper(context).isPowerSaving()) callerHintHelper.map(phoneNumber)
             callerHintHelper.show(context, phoneNumber, callerHint)
         }
     }

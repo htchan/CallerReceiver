@@ -79,7 +79,7 @@ class CallerHintHelper {
             createNotificationChannel(context)
             pushNotification(context, phoneNumber, callerHint)
         }
-        if (useToast) {
+        if (useToast && !PowerHelper(context).isPowerSaving()) {
             showToast(context, phoneNumber, callerHint)
         }
     }

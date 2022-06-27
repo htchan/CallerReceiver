@@ -1,25 +1,25 @@
 package com.htchan.callreceiver
 
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.widget.Button
-import android.widget.TextView
-import android.content.pm.PackageManager
-
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.res.Configuration
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.os.PowerManager
 import android.util.Log
+import android.view.View
+import android.widget.Button
 import android.widget.EditText
 import android.widget.Switch
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import com.htchan.callreceiver.helper.CallerHintHelper
 import com.htchan.callreceiver.helper.PermissionHelper
+import com.htchan.callreceiver.helper.PowerHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.Dispatcher
 
 
 class MainActivity : AppCompatActivity() {
@@ -125,6 +125,17 @@ class MainActivity : AppCompatActivity() {
                 apply()
             }
         }
+
+        val toastWarning = findViewById<TextView>(R.id.toast_warning)
+        val powerManager = this.getSystemService(POWER_SERVICE) as PowerManager
+        if (PowerHelper(this.applicationContext).isPowerSaving()) {
+            toastWarning.visibility = View.VISIBLE
+            toastWarning.text = "Toast Alert does not work when power saving mode is on"
+            toastSwitch.isEnabled = false
+        } else {
+            toastWarning.visibility = View.INVISIBLE
+        }
+
         val notificationSwitch = findViewById<Switch>(R.id.notification_switch)
         if (!validPermission) notificationSwitch.isEnabled = false
         notificationSwitch.isChecked = sharedPref.getBoolean("use_notification", true)
