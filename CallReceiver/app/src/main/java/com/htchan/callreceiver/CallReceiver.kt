@@ -1,12 +1,9 @@
 package com.htchan.callreceiver
 
-import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.PowerManager
 import android.telephony.TelephonyManager
-import androidx.appcompat.app.AppCompatActivity
 import com.htchan.callreceiver.helper.CallerHintHelper
 import com.htchan.callreceiver.helper.ContactHelper
 import com.htchan.callreceiver.helper.PermissionHelper
@@ -15,7 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class CallReceiver: BroadcastReceiver() {
+class CallReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (!PermissionHelper(context).validatePermission()) return
 

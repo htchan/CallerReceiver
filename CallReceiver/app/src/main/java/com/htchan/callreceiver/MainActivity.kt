@@ -29,13 +29,15 @@ class MainActivity : AppCompatActivity() {
     companion object {
         const val QUERY_PHONE_NUMBER = "phone_number"
 
-        fun newIntent(context: Context, phoneNumber: String) =  Intent(context, MainActivity::class.java).apply {
-            // Intent.FLAG_ACTIVITY_SINGLE_TOP
-            // Clear all history, click back will close App
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra(QUERY_PHONE_NUMBER, phoneNumber)
-        }
+        fun newIntent(context: Context, phoneNumber: String) =
+            Intent(context, MainActivity::class.java).apply {
+                // Intent.FLAG_ACTIVITY_SINGLE_TOP
+                // Clear all history, click back will close App
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                putExtra(QUERY_PHONE_NUMBER, phoneNumber)
+            }
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)

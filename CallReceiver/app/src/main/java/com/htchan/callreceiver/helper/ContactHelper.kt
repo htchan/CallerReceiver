@@ -1,9 +1,9 @@
 package com.htchan.callreceiver.helper
 
-import android.provider.ContactsContract
-import android.net.Uri
-import android.database.Cursor
 import android.content.Context
+import android.database.Cursor
+import android.net.Uri
+import android.provider.ContactsContract
 
 class ContactHelper {
     companion object {
