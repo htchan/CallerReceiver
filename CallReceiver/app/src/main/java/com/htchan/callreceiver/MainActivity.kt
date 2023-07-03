@@ -7,6 +7,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.PowerManager
+import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -14,7 +15,9 @@ import android.widget.EditText
 import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.text.HtmlCompat
 import com.htchan.callreceiver.helper.CallerHintHelper
+import com.htchan.callreceiver.helper.ImageGetter
 import com.htchan.callreceiver.helper.PermissionHelper
 import com.htchan.callreceiver.helper.PowerHelper
 import kotlinx.coroutines.CoroutineScope
@@ -160,7 +163,8 @@ class MainActivity : AppCompatActivity() {
                 val result = CallerHintHelper().map(testPhoneNumberInput.text.toString())
                 Log.e("callreceiver", "result: $result")
                 runOnUiThread {
-                    testResultView.text = result
+                    Log.d("check result", result)
+                    applyResultHTML(testResultView, result)
                 }
             }
         }
@@ -169,5 +173,19 @@ class MainActivity : AppCompatActivity() {
             testPhoneNumberInput.setText(queryPhoneNumber)
             sendTestButton.callOnClick()
         }
+    }
+
+    private fun applyResultHTML(view: TextView, text: String) {
+        // Creating object of ImageGetter class you just created
+        val imageGetter = ImageGetter(resources, view)
+
+        // to enable image/link clicking
+        view.movementMethod = LinkMovementMethod.getInstance()
+
+        view.text = HtmlCompat.fromHtml(text, HtmlCompat.FROM_HTML_MODE_LEGACY, imageGetter, null)
+    }
+
+    private fun applyResultText(view: TextView, text: String) {
+        view.text = text
     }
 }

@@ -93,7 +93,7 @@ class CallerHintHelper {
                 .build()
             val request = Request.Builder()
                 .url(
-                    "https://www.hkjunkcall.com/".toHttpUrl()
+                    "https://hkjunkcall.com/".toHttpUrl()
                         ?.newBuilder()
                         ?.addQueryParameter("ft", phoneNumber)
                         ?.build()
@@ -111,19 +111,32 @@ class CallerHintHelper {
                 return UNKNOWN_CALLER_NAME
             }
 
-            content = content.replace("[\r\n\t ]".toRegex(), "") ?: ""
-            content =
-                "<divclass=\"hr-text\"data-content=\"已提交資料\"id=\"已提交資料\"></div>(.*?)<buttontype=\"button\"class=\"btnbtn-infowhite_link\">".toRegex()
-                    .find(content)?.groupValues?.get(0)
-            content ?: return FAIL_CALLER_NAME
-
-            val result = "<!--googleoff:on-->([^<]*?)</font></td>".toRegex().findAll(content)
-                .map { it.groupValues.get(1) ?: "" }.filter { it.isNotBlank() }.toMutableList()
-            return result.joinToString(separator = "\n")
+            // return findTagArray(content).joinToString(separator = "\n")
+            return findStatHtml(content)
         } catch (e: Exception) {
             Log.d("caller logging", e.message ?: "no message")
             name = FAIL_CALLER_NAME
         }
         return name
+    }
+
+    fun findTagArray(content: String): List<String> {
+        var processing = content.replace("[\r\n\t ]".toRegex(), "")
+        processing =
+            "<divclass=\"hr-text\"data-content=\"已提交資料\"id=\"已提交資料\"></div>(.*?)<buttontype=\"button\"class=\"btnbtn-infowhite_link\">".toRegex()
+                .find(processing)?.groupValues?.get(0) ?: return listOf(FAIL_CALLER_NAME)
+
+        val result = "<!--googleoff:on-->([^<]*?)</font></td>".toRegex().findAll(processing)
+            .map { it.groupValues.get(1) ?: "" }.filter { it.isNotBlank() }.toMutableList()
+        return result
+    }
+
+    fun findStatHtml(content: String): String {
+        var result = content.replace("[\r\n\t]".toRegex(), "")
+        result =
+            "個別回報資料不會構成任何攔截動作.*?((<table.*?</table> *)+)".toRegex()
+                .find(result)?.groupValues?.get(1)?: FAIL_CALLER_NAME
+        result = result.replace("<table[a-z0-9 %=]*? class=ads.*?</table>".toRegex(), "")
+        return result 
     }
 }
