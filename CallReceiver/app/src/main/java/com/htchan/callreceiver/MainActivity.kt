@@ -7,15 +7,14 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.PowerManager
+import android.text.Editable
 import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Switch
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
+import com.google.android.material.textfield.TextInputEditText
 import com.htchan.callreceiver.helper.CallerHintHelper
 import com.htchan.callreceiver.helper.ImageGetter
 import com.htchan.callreceiver.helper.PermissionHelper
@@ -57,6 +56,7 @@ class MainActivity : AppCompatActivity() {
             renderEnableButton()
         }
         renderSwitches()
+        renderCallerQueryField()
         setupTestArea(intent.getStringExtra(QUERY_PHONE_NUMBER))
     }
 
@@ -65,6 +65,7 @@ class MainActivity : AppCompatActivity() {
         permissionUtils.handlePermission(this)
         renderEnableButton()
         renderSwitches()
+        renderCallerQueryField()
     }
 
     private fun renderEnableButton() {
@@ -115,6 +116,9 @@ class MainActivity : AppCompatActivity() {
             if (!sharedPref.contains("use_notification")) {
                 putBoolean("use_notification", true)
             }
+            if (!sharedPref.contains("caller_query")) {
+                putString("caller_query", "https://hkjunkcall.com/?ft={phone_number}")
+            }
             apply()
         }
     }
@@ -133,7 +137,7 @@ class MainActivity : AppCompatActivity() {
 
         val toastWarning = findViewById<TextView>(R.id.toast_warning)
         val powerManager = this.getSystemService(POWER_SERVICE) as PowerManager
-        if (PowerHelper(this.applicationContext).isPowerSaving()) {
+        if (PowerHelper(applicationContext).isPowerSaving()) {
             toastWarning.visibility = View.VISIBLE
             toastWarning.text = "Toast Alert does not work when power saving mode is on"
             toastSwitch.isEnabled = false
@@ -152,30 +156,52 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun renderCallerQueryField() {
+        val callerQueryInput = findViewById<TextInputEditText>(R.id.caller_query_input)
+
+        callerQueryInput.setText(sharedPref.getString("caller_query", "https://hkjunkcall.com/?ft={phone_number}"))
+        callerQueryInput.setOnFocusChangeListener { view, isFocused ->
+            if (!isFocused) {
+                with(sharedPref.edit()) {
+                    val callerQueryLink = (view as TextInputEditText).text.toString()
+                    
+                    putString("caller_query", callerQueryLink)
+                    apply()
+                }
+            }
+        }
+    }
+
     private fun setupTestArea(queryPhoneNumber: String?) {
-        val testPhoneNumberInput = findViewById<EditText>(R.id.test_phone_number)
-        val sendTestButton = findViewById<Button>(R.id.send_test_button)
+        val phoneNumberInput = findViewById<TextInputEditText>(R.id.phone_number_input)
+        val sendTestButton = findViewById<ImageButton>(R.id.send_test_button)
         val testResultView = findViewById<TextView>(R.id.test_result)
 
         sendTestButton.setOnClickListener {
+            applyLoading(testResultView, sendTestButton)
             CoroutineScope(Dispatchers.IO).launch {
-                Log.e("callreceiver", testPhoneNumberInput.text.toString())
-                val result = CallerHintHelper().map(testPhoneNumberInput.text.toString())
+                Log.e("callreceiver", phoneNumberInput.text.toString())
+                val result = CallerHintHelper().map(applicationContext, phoneNumberInput.text.toString())
                 Log.e("callreceiver", "result: $result")
                 runOnUiThread {
                     Log.d("check result", result)
-                    applyResultHTML(testResultView, result)
+                    applyResultHTML(testResultView, sendTestButton, result)
                 }
             }
         }
 
         if (queryPhoneNumber != null) {
-            testPhoneNumberInput.setText(queryPhoneNumber)
+            phoneNumberInput.setText(queryPhoneNumber)
             sendTestButton.callOnClick()
         }
     }
 
-    private fun applyResultHTML(view: TextView, text: String) {
+    private fun applyLoading(view: TextView, btn: ImageButton) {
+        view.text = "Loading ..."
+        btn.isEnabled = false
+    }
+
+    private fun applyResultHTML(view: TextView, btn: ImageButton, text: String) {
         // Creating object of ImageGetter class you just created
         val imageGetter = ImageGetter(resources, view)
 
@@ -183,6 +209,7 @@ class MainActivity : AppCompatActivity() {
         view.movementMethod = LinkMovementMethod.getInstance()
 
         view.text = HtmlCompat.fromHtml(text, HtmlCompat.FROM_HTML_MODE_LEGACY, imageGetter, null)
+        btn.isEnabled = true
     }
 
     private fun applyResultText(view: TextView, text: String) {

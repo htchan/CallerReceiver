@@ -84,26 +84,26 @@ class CallerHintHelper {
         }
     }
 
-    fun map(phoneNumber: String): String {
+    fun map(context: Context, phoneNumber: String): String {
         var name: String = ""
         try {
             val client = OkHttpClient.Builder()
-                .connectTimeout(2, TimeUnit.SECONDS)
-                .readTimeout(3, TimeUnit.SECONDS)
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
                 .build()
-            val request = Request.Builder()
-                .url(
-                    "https://hkjunkcall.com/".toHttpUrl()
-                        ?.newBuilder()
-                        ?.addQueryParameter("ft", phoneNumber)
-                        ?.build()
-                )
-                .build()
+            val sharedPref =
+                context.getSharedPreferences("com.htchan.callreceiver", Context.MODE_PRIVATE)
+            val queryURL = sharedPref
+                .getString("caller_query", "https://hkjunkcall.com/?ft={phone_number}")!!
+                .replace("{phone_number}", phoneNumber)
+            Log.e("caller_request", queryURL)
+            val request = Request.Builder().url(queryURL.toHttpUrl()).build()
 
             val response = client.newCall(request).execute()
             var content = response.body?.string()
             response.body?.close()
             content = content ?: ""
+            Log.e("caller_request", content!!)
 
             if (content.isBlank() == true) {
                 return FAIL_CALLER_NAME
@@ -114,7 +114,7 @@ class CallerHintHelper {
             // return findTagArray(content).joinToString(separator = "\n")
             return findStatHtml(content)
         } catch (e: Exception) {
-            Log.d("caller logging", e.message ?: "no message")
+            Log.d("caller_request", e.message ?: "no message")
             name = FAIL_CALLER_NAME
         }
         return name

@@ -32,7 +32,7 @@ class CallReceiver : BroadcastReceiver() {
         if (!ContactHelper.phoneNumberExist(context, phoneNumber)) {
             val callerHintHelper = CallerHintHelper()
             var callerHint: String = callerHintHelper.UNKNOWN_CALLER_NAME
-            if (!PowerHelper(context).isPowerSaving()) callerHintHelper.map(phoneNumber)
+            if (!PowerHelper(context).isPowerSaving()) callerHintHelper.map(context, phoneNumber)
             callerHintHelper.show(context, phoneNumber, callerHint)
         }
     }
